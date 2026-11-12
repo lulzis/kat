@@ -55,7 +55,7 @@ class Config:
         return self.base_url.rstrip("/")
 
     @classmethod
-    def load(cls, path: str | os.PathLike[str] | None = None, **overrides) -> "Config":
+    def load(cls, path: str | os.PathLike[str] | None = None, **overrides) -> Config:
         """Resolve config from file, then KAT_* env vars, then explicit overrides."""
         data: dict = {}
         file = _find_config(path)
@@ -87,12 +87,12 @@ def _read_env() -> dict:
     out: dict = {}
     for key, value in os.environ.items():
         if key.startswith(_ENV_PREFIX):
-            out[key[len(_ENV_PREFIX):].lower()] = _coerce(key, value)
+            out[key[len(_ENV_PREFIX) :].lower()] = _coerce(key, value)
     return out
 
 
 def _coerce(key: str, value: str):
-    name = key[len(_ENV_PREFIX):].lower()
+    name = key[len(_ENV_PREFIX) :].lower()
     if name in (
         "max_steps",
         "request_timeout",

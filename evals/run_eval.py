@@ -80,7 +80,7 @@ def _evaluate(case, registry) -> tuple[bool, str]:
 
     try:
         final = agent.run(session, case["user"])
-    except Exception as exc:  # a crash is always a failure, never fatal here
+    except Exception as exc:  # noqa: BLE001 - a crash is always a failure, never fatal here
         return False, f"run raised {exc!r}"
 
     expect = case.get("expect", {})

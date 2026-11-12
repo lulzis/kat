@@ -16,7 +16,6 @@ import kat.tools.registry as registry_mod
 from kat.tools import ArgSpec, Executor, ToolArgError, ToolSpec
 from kat.tools.registry import build_registry
 
-
 # --- argument rendering ----------------------------------------------------
 
 
@@ -39,7 +38,9 @@ def test_render_positional_emits_bare_value():
 # --- target validation -----------------------------------------------------
 
 
-@pytest.mark.parametrize("value", ["10.10.10.10", "http://host/path", "example.com", "ftp://h:21/x"])
+@pytest.mark.parametrize(
+    "value", ["10.10.10.10", "http://host/path", "example.com", "ftp://h:21/x"]
+)
 def test_target_validation_accepts_safe_values(value):
     spec = ArgSpec(name="target", kind="positional", validate="target")
     assert spec.render(value) == [value]
@@ -168,7 +169,7 @@ def test_executor_shows_printable_strings_for_binary_stdout(pyrun_spec):
     assert "printable strings" in result.stdout
     assert "USER nathan" in result.stdout
     assert "PASS Buck3tH4TF0RM3!" in result.stdout
-    assert "\x00" not in result.stdout          # raw NUL bytes are not reproduced
+    assert "\x00" not in result.stdout  # raw NUL bytes are not reproduced
 
 
 def test_executor_leaves_text_stdout_untouched(pyrun_spec):
@@ -210,10 +211,10 @@ def test_curl_accepts_ftp_url_with_special_characters_in_password():
 @pytest.mark.parametrize(
     "url",
     [
-        "http://host/items?id=1&page=2",          # query string with &
-        "http://host/vuln?q=1';DROP--",           # injection test payload
-        "http://host/path;matrix=1",              # matrix parameter
-        "http://user:p@ss!word@host/path",        # credentials in the URL
+        "http://host/items?id=1&page=2",  # query string with &
+        "http://host/vuln?q=1';DROP--",  # injection test payload
+        "http://host/path;matrix=1",  # matrix parameter
+        "http://user:p@ss!word@host/path",  # credentials in the URL
     ],
 )
 def test_curl_accepts_real_world_urls(url):
@@ -255,12 +256,14 @@ def test_sqlmap_accepts_url_with_multiple_query_parameters():
 
 def test_curl_sends_headers_cookie_and_post_body():
     spec = _curl_spec()
-    argv = spec.argv({
-        "url": "http://host/login",
-        "header": ["X-Forwarded-For: 127.0.0.1", "Authorization: Bearer x"],
-        "cookie": "session=abc123",
-        "data": "user=admin&pass=p@ss!",
-    })
+    argv = spec.argv(
+        {
+            "url": "http://host/login",
+            "header": ["X-Forwarded-For: 127.0.0.1", "Authorization: Bearer x"],
+            "cookie": "session=abc123",
+            "data": "user=admin&pass=p@ss!",
+        }
+    )
     assert argv.count("-H") == 2
     assert "X-Forwarded-For: 127.0.0.1" in argv
     assert "Authorization: Bearer x" in argv
@@ -283,19 +286,33 @@ def test_curl_accepts_a_single_header_string():
 # mean "no file, print the body"; only a real path saves to disk.
 
 
-@pytest.mark.parametrize("word", [
-    "yes", "true", "on", "YES",
-    # Semantic "show me the body" words a weak model reaches for (output="body"
-    # was taken as a filename in a real run, so the pcap body was written to a
-    # file called "body" and the agent never read the cleartext inside it).
-    "body", "response", "stdout", "print", "show", "content", "console",
-    "inline", "Body", "STDOUT",
-])
+@pytest.mark.parametrize(
+    "word",
+    [
+        "yes",
+        "true",
+        "on",
+        "YES",
+        # Semantic "show me the body" words a weak model reaches for (output="body"
+        # was taken as a filename in a real run, so the pcap body was written to a
+        # file called "body" and the agent never read the cleartext inside it).
+        "body",
+        "response",
+        "stdout",
+        "print",
+        "show",
+        "content",
+        "console",
+        "inline",
+        "Body",
+        "STDOUT",
+    ],
+)
 def test_curl_output_boolean_word_prints_the_body(word):
     spec = _curl_spec()
     argv = spec.argv({"url": "http://host/data/1", "output": word})
-    assert "-o" not in argv          # no file is created
-    assert word not in argv          # the word is not taken as a filename
+    assert "-o" not in argv  # no file is created
+    assert word not in argv  # the word is not taken as a filename
     assert argv[-1] == "http://host/data/1"
 
 
@@ -322,7 +339,7 @@ def test_curl_saving_still_reports_size_and_content_type():
 def test_wget_output_boolean_word_streams_to_stdout():
     spec = build_registry().get("wget")
     argv = spec.argv({"url": "http://host/data/1", "output": "yes"})
-    assert "yes" not in argv         # not taken as a filename
+    assert "yes" not in argv  # not taken as a filename
     assert "-qO" in argv and argv[argv.index("-qO") + 1] == "-"
     assert argv[-1] == "http://host/data/1"
 
@@ -345,8 +362,9 @@ def test_wget_ignores_a_non_integer_timeout_instead_of_failing():
 
 def test_ssh_runs_a_single_remote_command_non_interactively():
     spec = build_registry().get("ssh")
-    argv = spec.argv({"user": "nathan", "host": "10.129.142.36",
-                      "command": "id; sudo -l; cat user.txt"})
+    argv = spec.argv(
+        {"user": "nathan", "host": "10.129.142.36", "command": "id; sudo -l; cat user.txt"}
+    )
     assert "BatchMode=yes" in argv
     assert "nathan@10.129.142.36" in argv
     assert argv[-1] == "id; sudo -l; cat user.txt"
@@ -354,8 +372,9 @@ def test_ssh_runs_a_single_remote_command_non_interactively():
 
 def test_sshpass_wraps_ssh_with_a_password():
     spec = build_registry().get("sshpass")
-    argv = spec.argv({"user": "nathan", "host": "10.10.10.10",
-                      "password": "Buck3tH4TF0RM3!", "command": "id"})
+    argv = spec.argv(
+        {"user": "nathan", "host": "10.10.10.10", "password": "Buck3tH4TF0RM3!", "command": "id"}
+    )
     assert argv[argv.index("-p") + 1] == "Buck3tH4TF0RM3!"
     assert "ssh" in argv
     assert "nathan@10.10.10.10" in argv
@@ -368,11 +387,17 @@ def test_ssh_with_a_password_routes_through_sshpass():
     # login always failed with exit 255. The ssh tool must redirect to sshpass
     # when a password (and no key) is given, and must NOT set BatchMode.
     spec = build_registry().get("ssh")
-    argv = spec.argv({"user": "nathan", "host": "10.129.142.36",
-                      "password": "Buck3tH4TF0RM3!", "command": "id; sudo -l"})
-    assert _bin_stem(argv[0]) == "sshpass"      # routed through sshpass
+    argv = spec.argv(
+        {
+            "user": "nathan",
+            "host": "10.129.142.36",
+            "password": "Buck3tH4TF0RM3!",
+            "command": "id; sudo -l",
+        }
+    )
+    assert _bin_stem(argv[0]) == "sshpass"  # routed through sshpass
     assert argv[argv.index("-p") + 1] == "Buck3tH4TF0RM3!"
-    assert "BatchMode=yes" not in argv          # would block password auth
+    assert "BatchMode=yes" not in argv  # would block password auth
     assert "ssh" in argv
     assert "nathan@10.129.142.36" in argv
     assert argv[-1] == "id; sudo -l"
@@ -382,9 +407,10 @@ def test_ssh_with_a_key_still_runs_ssh_directly_in_batch_mode():
     # With a key (no password) ssh authenticates non-interactively, so it must
     # stay on ssh+BatchMode and not be rerouted through sshpass.
     spec = build_registry().get("ssh")
-    argv = spec.argv({"user": "nathan", "host": "10.129.142.36",
-                      "key": "/tmp/id_rsa", "command": "id"})
-    assert _bin_stem(argv[0]) == "ssh"          # ssh directly, not sshpass
+    argv = spec.argv(
+        {"user": "nathan", "host": "10.129.142.36", "key": "/tmp/id_rsa", "command": "id"}
+    )
+    assert _bin_stem(argv[0]) == "ssh"  # ssh directly, not sshpass
     assert "BatchMode=yes" in argv
     assert argv[argv.index("-i") + 1] == "/tmp/id_rsa"
     assert argv[-1] == "id"
@@ -417,12 +443,14 @@ def test_getuserspns_accepts_credentials_with_special_characters():
 
 def test_ldapsearch_passes_a_filter_with_parentheses():
     spec = build_registry().get("ldapsearch")
-    argv = spec.argv({
-        "simple_auth": True,
-        "uri": "ldap://10.10.10.10",
-        "base": "dc=example,dc=com",
-        "filter": "(objectClass=user)",
-    })
+    argv = spec.argv(
+        {
+            "simple_auth": True,
+            "uri": "ldap://10.10.10.10",
+            "base": "dc=example,dc=com",
+            "filter": "(objectClass=user)",
+        }
+    )
     assert "ldap://10.10.10.10" in argv
     assert "dc=example,dc=com" in argv
     assert "(objectClass=user)" in argv

@@ -12,9 +12,9 @@ import re
 import shutil
 import subprocess
 import time
-from collections.abc import Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Any
 
 
 class ToolArgError(ValueError):
@@ -26,10 +26,22 @@ _SHELL_META = set(";&|`$<>(){}[]!*?\"'\\ \t\n\r")
 
 # Keys a model commonly adds to an action's args to narrate its intent. They are
 # not tool options; a strict-argument tool ignores them instead of erroring.
-_META_ARG_KEYS = frozenset({
-    "reason", "description", "rationale", "comment", "note", "notes",
-    "why", "purpose", "thought", "explanation", "goal", "intent",
-})
+_META_ARG_KEYS = frozenset(
+    {
+        "reason",
+        "description",
+        "rationale",
+        "comment",
+        "note",
+        "notes",
+        "why",
+        "purpose",
+        "thought",
+        "explanation",
+        "goal",
+        "intent",
+    }
+)
 
 
 @dataclass(slots=True)
@@ -53,9 +65,7 @@ class ArgSpec:
 
     def _check(self, value: Any) -> Any:
         if self.choices is not None and str(value) not in self.choices:
-            raise ToolArgError(
-                f"{self.name}: {value!r} is not one of {', '.join(self.choices)}"
-            )
+            raise ToolArgError(f"{self.name}: {value!r} is not one of {', '.join(self.choices)}")
         if self.validate == "int":
             try:
                 return int(value)
@@ -182,6 +192,7 @@ class Executor:
         try:
             proc = subprocess.run(
                 argv,
+                check=False,
                 capture_output=True,
                 text=True,
                 encoding="utf-8",
@@ -238,10 +249,7 @@ def _looks_binary(text: str) -> bool:
     sample = text[:4096]
     if "\x00" in sample:
         return True
-    bad = sum(
-        1 for ch in sample
-        if ch == "�" or (ord(ch) < 0x20 and ch not in _TEXT_CTRL_OK)
-    )
+    bad = sum(1 for ch in sample if ch == "�" or (ord(ch) < 0x20 and ch not in _TEXT_CTRL_OK))
     return bad / len(sample) > 0.10
 
 

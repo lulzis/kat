@@ -6,8 +6,8 @@ import json
 import time
 import urllib.error
 import urllib.request
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable
 
 from .config import Config
 
@@ -129,7 +129,7 @@ class LLMClient:
                 line = raw.decode("utf-8", "replace").strip()
                 if not line.startswith("data:"):
                     continue
-                payload = line[len("data:"):].strip()
+                payload = line[len("data:") :].strip()
                 if payload == "[DONE]":
                     break
                 try:

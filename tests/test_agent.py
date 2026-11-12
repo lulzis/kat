@@ -24,7 +24,6 @@ from kat.config import Config
 from kat.session import Session
 from kat.tools import ToolResult
 
-
 # --- parse_action ----------------------------------------------------------
 
 
@@ -366,11 +365,7 @@ def test_parse_actions_handles_comma_separated_objects_in_one_block():
 
 
 def test_parse_actions_handles_a_json_array_of_actions():
-    text = (
-        "```action\n"
-        '[{"tool": "a", "args": {"x": 1}}, {"tool": "b", "args": {"y": 2}}]\n'
-        "```"
-    )
+    text = '```action\n[{"tool": "a", "args": {"x": 1}}, {"tool": "b", "args": {"y": 2}}]\n```'
     actions = parse_actions(text)
     assert [a.tool for a in actions] == ["a", "b"]
     assert actions[1].args == {"y": 2}

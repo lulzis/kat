@@ -122,10 +122,26 @@ def _as_list(value: Any) -> list[Any]:
 # "stdout"). A weak model reaches for all of these meaning "show me", and taken as
 # filenames they wrote every response to one junk file the model could never read,
 # so it never saw a page body and could not follow its links.
-_SHOW_WORDS = frozenset({
-    "yes", "y", "true", "on", "no", "n", "false", "off",
-    "body", "response", "stdout", "print", "show", "content", "console", "inline",
-})
+_SHOW_WORDS = frozenset(
+    {
+        "yes",
+        "y",
+        "true",
+        "on",
+        "no",
+        "n",
+        "false",
+        "off",
+        "body",
+        "response",
+        "stdout",
+        "print",
+        "show",
+        "content",
+        "console",
+        "inline",
+    }
+)
 
 
 def _resolve_output(value: Any) -> str | None:
@@ -206,8 +222,13 @@ def _build_curl(args: Mapping[str, Any]) -> list[str]:
         # size and content-type to stdout so the step is not blind: a page saved
         # to a file by mistake announces itself as text/* (re-fetch and read it),
         # while a real artefact announces its binary type (open it with a reader).
-        tail += ["-s", "-o", output, "-w",
-                 "[saved %{size_download} bytes, content-type %{content_type}]\\n"]
+        tail += [
+            "-s",
+            "-o",
+            output,
+            "-w",
+            "[saved %{size_download} bytes, content-type %{content_type}]\\n",
+        ]
     tail.append(_safe_url("url", args.get("url")))
     return tail
 
@@ -239,8 +260,10 @@ def _build_gobuster(args: Mapping[str, Any]) -> list[str]:
     # The directory module is a positional subcommand that precedes its options.
     tail = [
         "dir",
-        "-u", _safe_url("url", args.get("url")),
-        "-w", _resolve_wordlist(args.get("wordlist")),
+        "-u",
+        _safe_url("url", args.get("url")),
+        "-w",
+        _resolve_wordlist(args.get("wordlist")),
     ]
     if args.get("extensions"):
         tail += ["-x", _safe("extensions", args["extensions"])]
@@ -340,8 +363,10 @@ def _build_john(args: Mapping[str, Any]) -> list[str]:
 
 
 _SSH_HARDENING = [
-    "-o", "StrictHostKeyChecking=no",
-    "-o", "UserKnownHostsFile=/dev/null",
+    "-o",
+    "StrictHostKeyChecking=no",
+    "-o",
+    "UserKnownHostsFile=/dev/null",
 ]
 
 
@@ -441,22 +466,49 @@ def build_registry() -> Registry:
             summary="Network port scanner with service, version, and script detection.",
             category="recon",
             args=(
-                ArgSpec("ports", token="-p", validate="port",
-                        help="Ports or ranges to scan, for example 22,80,443 or 1-1024."),
-                ArgSpec("min_rate", token="--min-rate", validate="int",
-                        help="Minimum number of packets to send per second."),
-                ArgSpec("service_scan", kind="flag", token="-sV",
-                        help="Identify the service and version behind open ports."),
-                ArgSpec("default_scripts", kind="flag", token="-sC",
-                        help="Run the default script set."),
-                ArgSpec("aggressive", kind="flag", token="-A",
-                        help="Enable OS and version detection, scripts, and traceroute."),
-                ArgSpec("no_ping", kind="flag", token="-Pn",
-                        help="Skip host discovery and treat the host as online."),
-                ArgSpec("udp_scan", kind="flag", token="-sU",
-                        help="Scan UDP ports instead of TCP."),
-                ArgSpec("target", kind="positional", required=True, validate="target",
-                        help="Host, address, or CIDR range to scan."),
+                ArgSpec(
+                    "ports",
+                    token="-p",
+                    validate="port",
+                    help="Ports or ranges to scan, for example 22,80,443 or 1-1024.",
+                ),
+                ArgSpec(
+                    "min_rate",
+                    token="--min-rate",
+                    validate="int",
+                    help="Minimum number of packets to send per second.",
+                ),
+                ArgSpec(
+                    "service_scan",
+                    kind="flag",
+                    token="-sV",
+                    help="Identify the service and version behind open ports.",
+                ),
+                ArgSpec(
+                    "default_scripts", kind="flag", token="-sC", help="Run the default script set."
+                ),
+                ArgSpec(
+                    "aggressive",
+                    kind="flag",
+                    token="-A",
+                    help="Enable OS and version detection, scripts, and traceroute.",
+                ),
+                ArgSpec(
+                    "no_ping",
+                    kind="flag",
+                    token="-Pn",
+                    help="Skip host discovery and treat the host as online.",
+                ),
+                ArgSpec(
+                    "udp_scan", kind="flag", token="-sU", help="Scan UDP ports instead of TCP."
+                ),
+                ArgSpec(
+                    "target",
+                    kind="positional",
+                    required=True,
+                    validate="target",
+                    help="Host, address, or CIDR range to scan.",
+                ),
             ),
         ),
         ToolSpec(
@@ -465,14 +517,26 @@ def build_registry() -> Registry:
             summary="High-rate scanner for sweeping large address and port ranges.",
             category="recon",
             args=(
-                ArgSpec("ports", token="-p", validate="port",
-                        help="Ports or ranges to scan."),
-                ArgSpec("top_ports", token="--top-ports", validate="int",
-                        help="Scan the given number of most common ports."),
-                ArgSpec("rate", token="--rate", validate="int",
-                        help="Transmit rate in packets per second."),
-                ArgSpec("target", kind="positional", required=True, validate="target",
-                        help="Address or CIDR range to scan."),
+                ArgSpec("ports", token="-p", validate="port", help="Ports or ranges to scan."),
+                ArgSpec(
+                    "top_ports",
+                    token="--top-ports",
+                    validate="int",
+                    help="Scan the given number of most common ports.",
+                ),
+                ArgSpec(
+                    "rate",
+                    token="--rate",
+                    validate="int",
+                    help="Transmit rate in packets per second.",
+                ),
+                ArgSpec(
+                    "target",
+                    kind="positional",
+                    required=True,
+                    validate="target",
+                    help="Address or CIDR range to scan.",
+                ),
             ),
         ),
         ToolSpec(
@@ -481,12 +545,24 @@ def build_registry() -> Registry:
             summary="Discover hosts on the local network using ARP requests.",
             category="recon",
             args=(
-                ArgSpec("localnet", kind="flag", token="--localnet",
-                        help="Scan the whole network attached to the interface."),
-                ArgSpec("interface", token="-I", validate="target",
-                        help="Network interface to send from, for example eth0."),
-                ArgSpec("target", kind="positional", validate="target",
-                        help="Address or CIDR range to scan when not using --localnet."),
+                ArgSpec(
+                    "localnet",
+                    kind="flag",
+                    token="--localnet",
+                    help="Scan the whole network attached to the interface.",
+                ),
+                ArgSpec(
+                    "interface",
+                    token="-I",
+                    validate="target",
+                    help="Network interface to send from, for example eth0.",
+                ),
+                ArgSpec(
+                    "target",
+                    kind="positional",
+                    validate="target",
+                    help="Address or CIDR range to scan when not using --localnet.",
+                ),
             ),
         ),
         # -- DNS -----------------------------------------------------------
@@ -496,10 +572,16 @@ def build_registry() -> Registry:
             summary="Look up registration records for a domain or address.",
             category="dns",
             args=(
-                ArgSpec("server", token="-h", validate="target",
-                        help="Specific whois server to query."),
-                ArgSpec("target", kind="positional", required=True, validate="target",
-                        help="Domain name or IP address to look up."),
+                ArgSpec(
+                    "server", token="-h", validate="target", help="Specific whois server to query."
+                ),
+                ArgSpec(
+                    "target",
+                    kind="positional",
+                    required=True,
+                    validate="target",
+                    help="Domain name or IP address to look up.",
+                ),
             ),
         ),
         ToolSpec(
@@ -508,16 +590,28 @@ def build_registry() -> Registry:
             summary="Resolve DNS records for a name and record type.",
             category="dns",
             args=(
-                ArgSpec("name", kind="positional", required=True, validate="target",
-                        help="Name to resolve."),
-                ArgSpec("type", kind="positional",
-                        choices=("A", "AAAA", "MX", "NS", "TXT", "CNAME",
-                                 "SOA", "PTR", "SRV", "ANY"),
-                        help="Record type to request."),
-                ArgSpec("short", kind="flag", token="+short",
-                        help="Print only the concise answer."),
-                ArgSpec("trace", kind="flag", token="+trace",
-                        help="Trace the delegation path from the root servers."),
+                ArgSpec(
+                    "name",
+                    kind="positional",
+                    required=True,
+                    validate="target",
+                    help="Name to resolve.",
+                ),
+                ArgSpec(
+                    "type",
+                    kind="positional",
+                    choices=("A", "AAAA", "MX", "NS", "TXT", "CNAME", "SOA", "PTR", "SRV", "ANY"),
+                    help="Record type to request.",
+                ),
+                ArgSpec(
+                    "short", kind="flag", token="+short", help="Print only the concise answer."
+                ),
+                ArgSpec(
+                    "trace",
+                    kind="flag",
+                    token="+trace",
+                    help="Trace the delegation path from the root servers.",
+                ),
             ),
         ),
         ToolSpec(
@@ -526,15 +620,22 @@ def build_registry() -> Registry:
             summary="Enumerate DNS records, zones, and subdomains for a domain.",
             category="dns",
             args=(
-                ArgSpec("domain", token="-d", required=True, validate="target",
-                        help="Target domain."),
-                ArgSpec("type", token="-t",
-                        choices=("std", "rvl", "brt", "srv", "axfr", "zonewalk"),
-                        help="Enumeration type to perform."),
-                ArgSpec("nameserver", token="-n", validate="target",
-                        help="Name server to query."),
-                ArgSpec("wordlist", token="-D", validate="target",
-                        help="Path to a subdomain wordlist for brute enumeration."),
+                ArgSpec(
+                    "domain", token="-d", required=True, validate="target", help="Target domain."
+                ),
+                ArgSpec(
+                    "type",
+                    token="-t",
+                    choices=("std", "rvl", "brt", "srv", "axfr", "zonewalk"),
+                    help="Enumeration type to perform.",
+                ),
+                ArgSpec("nameserver", token="-n", validate="target", help="Name server to query."),
+                ArgSpec(
+                    "wordlist",
+                    token="-D",
+                    validate="target",
+                    help="Path to a subdomain wordlist for brute enumeration.",
+                ),
             ),
         ),
         # -- Web -----------------------------------------------------------
@@ -545,20 +646,25 @@ def build_registry() -> Registry:
             category="web",
             builder=_build_curl,
             args=(
-                ArgSpec("url", kind="positional", required=True,
-                        help="Target URL, including any query string, credentials, or payload."),
-                ArgSpec("method",
-                        choices=("GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"),
-                        help="HTTP method; GET is used when omitted."),
-                ArgSpec("output",
-                        help="Optional file path to save a binary body to (for example a "
-                             "packet capture); omit it to read the body in the response."),
-                ArgSpec("header",
-                        help="Request header 'Name: value'; may be a list for several."),
-                ArgSpec("cookie",
-                        help="Cookie string to send, for example 'session=abc123'."),
-                ArgSpec("data",
-                        help="Request body to send; issues a POST unless a method is set."),
+                ArgSpec(
+                    "url",
+                    kind="positional",
+                    required=True,
+                    help="Target URL, including any query string, credentials, or payload.",
+                ),
+                ArgSpec(
+                    "method",
+                    choices=("GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"),
+                    help="HTTP method; GET is used when omitted.",
+                ),
+                ArgSpec(
+                    "output",
+                    help="Optional file path to save a binary body to (for example a "
+                    "packet capture); omit it to read the body in the response.",
+                ),
+                ArgSpec("header", help="Request header 'Name: value'; may be a list for several."),
+                ArgSpec("cookie", help="Cookie string to send, for example 'session=abc123'."),
+                ArgSpec("data", help="Request body to send; issues a POST unless a method is set."),
                 ArgSpec("head", kind="flag", help="Request response headers only."),
                 ArgSpec("include", kind="flag", help="Include response headers in the output."),
                 ArgSpec("follow", kind="flag", help="Follow HTTP redirects."),
@@ -572,17 +678,31 @@ def build_registry() -> Registry:
             category="web",
             builder=_build_wget,
             args=(
-                ArgSpec("recursive", kind="flag", token="-r",
-                        help="Download recursively."),
-                ArgSpec("output", token="-O",
-                        help="Optional file path to save a binary download to; omit it to "
-                             "read the body in the response."),
-                ArgSpec("timeout", token="--timeout",
-                        help="Network timeout in seconds; ignored if not an integer."),
-                ArgSpec("no_check_certificate", kind="flag", token="--no-check-certificate",
-                        help="Do not validate the server certificate."),
-                ArgSpec("url", kind="positional", required=True, validate="target",
-                        help="URL to retrieve."),
+                ArgSpec("recursive", kind="flag", token="-r", help="Download recursively."),
+                ArgSpec(
+                    "output",
+                    token="-O",
+                    help="Optional file path to save a binary download to; omit it to "
+                    "read the body in the response.",
+                ),
+                ArgSpec(
+                    "timeout",
+                    token="--timeout",
+                    help="Network timeout in seconds; ignored if not an integer.",
+                ),
+                ArgSpec(
+                    "no_check_certificate",
+                    kind="flag",
+                    token="--no-check-certificate",
+                    help="Do not validate the server certificate.",
+                ),
+                ArgSpec(
+                    "url",
+                    kind="positional",
+                    required=True,
+                    validate="target",
+                    help="URL to retrieve.",
+                ),
             ),
         ),
         ToolSpec(
@@ -592,13 +712,21 @@ def build_registry() -> Registry:
             category="web",
             builder=_build_whatweb,
             args=(
-                ArgSpec("aggression", token="-a", choices=("1", "3", "4"),
-                        help="Aggression level: 1 passive, 3 aggressive, 4 heavy "
-                             "(a word like 'yes' maps to 3)."),
-                ArgSpec("verbose", kind="flag", token="-v",
-                        help="Report detailed plugin output."),
-                ArgSpec("target", kind="positional", required=True, validate="target",
-                        help="URL or host to fingerprint."),
+                ArgSpec(
+                    "aggression",
+                    token="-a",
+                    choices=("1", "3", "4"),
+                    help="Aggression level: 1 passive, 3 aggressive, 4 heavy "
+                    "(a word like 'yes' maps to 3).",
+                ),
+                ArgSpec("verbose", kind="flag", token="-v", help="Report detailed plugin output."),
+                ArgSpec(
+                    "target",
+                    kind="positional",
+                    required=True,
+                    validate="target",
+                    help="URL or host to fingerprint.",
+                ),
             ),
         ),
         ToolSpec(
@@ -607,14 +735,14 @@ def build_registry() -> Registry:
             summary="Scan a web server for known issues and misconfigurations.",
             category="web",
             args=(
-                ArgSpec("host", token="-h", required=True, validate="target",
-                        help="Target host or URL."),
-                ArgSpec("port", token="-p", validate="port",
-                        help="Port to scan."),
-                ArgSpec("ssl", kind="flag", token="-ssl",
-                        help="Force a TLS connection."),
-                ArgSpec("tuning", token="-Tuning",
-                        help="Restrict the scan to selected test categories."),
+                ArgSpec(
+                    "host", token="-h", required=True, validate="target", help="Target host or URL."
+                ),
+                ArgSpec("port", token="-p", validate="port", help="Port to scan."),
+                ArgSpec("ssl", kind="flag", token="-ssl", help="Force a TLS connection."),
+                ArgSpec(
+                    "tuning", token="-Tuning", help="Restrict the scan to selected test categories."
+                ),
             ),
         ),
         ToolSpec(
@@ -638,11 +766,14 @@ def build_registry() -> Registry:
             category="web",
             builder=_build_ffuf,
             args=(
-                ArgSpec("url", required=True,
-                        help="Target URL; the FUZZ keyword is appended if absent."),
+                ArgSpec(
+                    "url", required=True, help="Target URL; the FUZZ keyword is appended if absent."
+                ),
                 ArgSpec("wordlist", required=True, help="Path to the wordlist."),
                 ArgSpec("extensions", help="Comma-separated extensions to append to each word."),
-                ArgSpec("match_codes", help="Comma-separated HTTP status codes to treat as matches."),
+                ArgSpec(
+                    "match_codes", help="Comma-separated HTTP status codes to treat as matches."
+                ),
                 ArgSpec("threads", validate="int", help="Number of concurrent requests."),
             ),
         ),
@@ -652,18 +783,29 @@ def build_registry() -> Registry:
             summary="Recursively discover web content using a wordlist.",
             category="web",
             args=(
-                ArgSpec("url", token="-u", required=True, validate="target",
-                        help="Base URL to scan."),
-                ArgSpec("wordlist", token="-w", required=True, validate="target",
-                        help="Path to the wordlist."),
-                ArgSpec("extensions", token="-x",
-                        help="Comma-separated file extensions to request."),
-                ArgSpec("threads", token="-t", validate="int",
-                        help="Number of concurrent requests."),
-                ArgSpec("depth", token="-d", validate="int",
-                        help="Maximum recursion depth."),
-                ArgSpec("insecure", kind="flag", token="-k",
-                        help="Do not validate the server certificate."),
+                ArgSpec(
+                    "url", token="-u", required=True, validate="target", help="Base URL to scan."
+                ),
+                ArgSpec(
+                    "wordlist",
+                    token="-w",
+                    required=True,
+                    validate="target",
+                    help="Path to the wordlist.",
+                ),
+                ArgSpec(
+                    "extensions", token="-x", help="Comma-separated file extensions to request."
+                ),
+                ArgSpec(
+                    "threads", token="-t", validate="int", help="Number of concurrent requests."
+                ),
+                ArgSpec("depth", token="-d", validate="int", help="Maximum recursion depth."),
+                ArgSpec(
+                    "insecure",
+                    kind="flag",
+                    token="-k",
+                    help="Do not validate the server certificate.",
+                ),
             ),
         ),
         ToolSpec(
@@ -673,8 +815,7 @@ def build_registry() -> Registry:
             category="web",
             builder=_build_sqlmap,
             args=(
-                ArgSpec("url", required=True,
-                        help="Target URL, including the parameter to test."),
+                ArgSpec("url", required=True, help="Target URL, including the parameter to test."),
                 ArgSpec("level", validate="int", help="Test level from 1 to 5."),
                 ArgSpec("risk", validate="int", help="Risk level from 1 to 3."),
                 ArgSpec("dbs", kind="flag", help="Enumerate the available databases."),
@@ -689,16 +830,30 @@ def build_registry() -> Registry:
             summary="Access SMB and CIFS shares to list and read files.",
             category="smb",
             args=(
-                ArgSpec("list", token="-L", validate="target",
-                        help="List the shares offered by this host."),
-                ArgSpec("no_pass", kind="flag", token="-N",
-                        help="Connect without prompting for a password."),
-                ArgSpec("user", token="-U",
-                        help="Credentials as user or user%password."),
-                ArgSpec("command", token="-c",
-                        help="Run a client command non-interactively, for example 'ls'."),
-                ArgSpec("service", kind="positional", validate="target",
-                        help="Share path such as //host/share."),
+                ArgSpec(
+                    "list",
+                    token="-L",
+                    validate="target",
+                    help="List the shares offered by this host.",
+                ),
+                ArgSpec(
+                    "no_pass",
+                    kind="flag",
+                    token="-N",
+                    help="Connect without prompting for a password.",
+                ),
+                ArgSpec("user", token="-U", help="Credentials as user or user%password."),
+                ArgSpec(
+                    "command",
+                    token="-c",
+                    help="Run a client command non-interactively, for example 'ls'.",
+                ),
+                ArgSpec(
+                    "service",
+                    kind="positional",
+                    validate="target",
+                    help="Share path such as //host/share.",
+                ),
             ),
         ),
         ToolSpec(
@@ -707,14 +862,23 @@ def build_registry() -> Registry:
             summary="Issue MS-RPC queries to enumerate Windows hosts.",
             category="smb",
             args=(
-                ArgSpec("user", token="-U",
-                        help="Credentials as user or user%password."),
-                ArgSpec("no_pass", kind="flag", token="-N",
-                        help="Connect without prompting for a password."),
-                ArgSpec("command", token="-c",
-                        help="RPC command to run, for example 'enumdomusers'."),
-                ArgSpec("host", kind="positional", required=True, validate="target",
-                        help="Target host or address."),
+                ArgSpec("user", token="-U", help="Credentials as user or user%password."),
+                ArgSpec(
+                    "no_pass",
+                    kind="flag",
+                    token="-N",
+                    help="Connect without prompting for a password.",
+                ),
+                ArgSpec(
+                    "command", token="-c", help="RPC command to run, for example 'enumdomusers'."
+                ),
+                ArgSpec(
+                    "host",
+                    kind="positional",
+                    required=True,
+                    validate="target",
+                    help="Target host or address.",
+                ),
             ),
         ),
         ToolSpec(
@@ -723,12 +887,21 @@ def build_registry() -> Registry:
             summary="Enumerate information exposed by SMB and related services.",
             category="smb",
             args=(
-                ArgSpec("all", kind="flag", token="-A",
-                        help="Run the full set of simple enumeration checks."),
+                ArgSpec(
+                    "all",
+                    kind="flag",
+                    token="-A",
+                    help="Run the full set of simple enumeration checks.",
+                ),
                 ArgSpec("user", token="-u", help="Username for authenticated checks."),
                 ArgSpec("password", token="-p", help="Password for authenticated checks."),
-                ArgSpec("host", kind="positional", required=True, validate="target",
-                        help="Target host or address."),
+                ArgSpec(
+                    "host",
+                    kind="positional",
+                    required=True,
+                    validate="target",
+                    help="Target host or address.",
+                ),
             ),
         ),
         ToolSpec(
@@ -737,21 +910,37 @@ def build_registry() -> Registry:
             summary="Enumerate and test authentication across network services.",
             category="smb",
             args=(
-                ArgSpec("protocol", kind="positional", required=True,
-                        choices=("smb", "ssh", "winrm", "ldap", "mssql",
-                                 "rdp", "ftp", "wmi", "nfs"),
-                        help="Protocol module to use."),
-                ArgSpec("target", kind="positional", required=True, validate="target",
-                        help="Target host, address, or range."),
+                ArgSpec(
+                    "protocol",
+                    kind="positional",
+                    required=True,
+                    choices=("smb", "ssh", "winrm", "ldap", "mssql", "rdp", "ftp", "wmi", "nfs"),
+                    help="Protocol module to use.",
+                ),
+                ArgSpec(
+                    "target",
+                    kind="positional",
+                    required=True,
+                    validate="target",
+                    help="Target host, address, or range.",
+                ),
                 ArgSpec("user", token="-u", help="Username or path to a username list."),
                 ArgSpec("password", token="-p", help="Password or path to a password list."),
-                ArgSpec("hash", token="-H", help="NT hash to authenticate with instead of a password."),
-                ArgSpec("shares", kind="flag", token="--shares",
-                        help="Enumerate shares over SMB."),
-                ArgSpec("command", token="-x",
-                        help="Command to run on the target over the chosen protocol."),
-                ArgSpec("local_auth", kind="flag", token="--local-auth",
-                        help="Authenticate against the local account database, not the domain."),
+                ArgSpec(
+                    "hash", token="-H", help="NT hash to authenticate with instead of a password."
+                ),
+                ArgSpec("shares", kind="flag", token="--shares", help="Enumerate shares over SMB."),
+                ArgSpec(
+                    "command",
+                    token="-x",
+                    help="Command to run on the target over the chosen protocol.",
+                ),
+                ArgSpec(
+                    "local_auth",
+                    kind="flag",
+                    token="--local-auth",
+                    help="Authenticate against the local account database, not the domain.",
+                ),
             ),
         ),
         ToolSpec(
@@ -761,17 +950,30 @@ def build_registry() -> Registry:
             category="net",
             builder=_build_nc,
             args=(
-                ArgSpec("verbose", kind="flag", token="-v",
-                        help="Report connection progress."),
-                ArgSpec("zero_io", kind="flag", token="-z",
-                        help="Report whether a port is open without sending data."),
-                ArgSpec("wait", token="-w", validate="int",
-                        help="Connection timeout in seconds (a short default is "
-                             "applied so the connection cannot hang)."),
-                ArgSpec("host", kind="positional", required=True, validate="target",
-                        help="Target host or address."),
-                ArgSpec("port", kind="positional", required=True, validate="port",
-                        help="Target port."),
+                ArgSpec("verbose", kind="flag", token="-v", help="Report connection progress."),
+                ArgSpec(
+                    "zero_io",
+                    kind="flag",
+                    token="-z",
+                    help="Report whether a port is open without sending data.",
+                ),
+                ArgSpec(
+                    "wait",
+                    token="-w",
+                    validate="int",
+                    help="Connection timeout in seconds (a short default is "
+                    "applied so the connection cannot hang).",
+                ),
+                ArgSpec(
+                    "host",
+                    kind="positional",
+                    required=True,
+                    validate="target",
+                    help="Target host or address.",
+                ),
+                ArgSpec(
+                    "port", kind="positional", required=True, validate="port", help="Target port."
+                ),
             ),
         ),
         # -- Credentials ---------------------------------------------------
@@ -782,17 +984,42 @@ def build_registry() -> Registry:
             category="creds",
             args=(
                 ArgSpec("login", token="-l", help="Single username to try."),
-                ArgSpec("login_list", token="-L", validate="target",
-                        help="Path to a list of usernames."),
+                ArgSpec(
+                    "login_list", token="-L", validate="target", help="Path to a list of usernames."
+                ),
                 ArgSpec("password", token="-p", help="Single password to try."),
-                ArgSpec("password_list", token="-P", validate="target",
-                        help="Path to a list of passwords."),
-                ArgSpec("target", kind="positional", required=True, validate="target",
-                        help="Target host or address."),
-                ArgSpec("service", kind="positional", required=True,
-                        choices=("ssh", "ftp", "smb", "rdp", "mysql", "postgres",
-                                 "vnc", "telnet", "pop3", "imap", "smtp"),
-                        help="Service module to test."),
+                ArgSpec(
+                    "password_list",
+                    token="-P",
+                    validate="target",
+                    help="Path to a list of passwords.",
+                ),
+                ArgSpec(
+                    "target",
+                    kind="positional",
+                    required=True,
+                    validate="target",
+                    help="Target host or address.",
+                ),
+                ArgSpec(
+                    "service",
+                    kind="positional",
+                    required=True,
+                    choices=(
+                        "ssh",
+                        "ftp",
+                        "smb",
+                        "rdp",
+                        "mysql",
+                        "postgres",
+                        "vnc",
+                        "telnet",
+                        "pop3",
+                        "imap",
+                        "smtp",
+                    ),
+                    help="Service module to test.",
+                ),
             ),
         ),
         ToolSpec(
@@ -803,8 +1030,12 @@ def build_registry() -> Registry:
             active=False,
             builder=_build_john,
             args=(
-                ArgSpec("hashfile", kind="positional", required=True,
-                        help="Path to the file containing the hashes."),
+                ArgSpec(
+                    "hashfile",
+                    kind="positional",
+                    required=True,
+                    help="Path to the file containing the hashes.",
+                ),
                 ArgSpec("wordlist", help="Path to a wordlist for dictionary mode."),
                 ArgSpec("format", help="Hash format name, for example raw-md5 or nt."),
                 ArgSpec("rules", kind="flag", help="Apply the default mangling rules."),
@@ -818,14 +1049,31 @@ def build_registry() -> Registry:
             category="creds",
             active=False,
             args=(
-                ArgSpec("hash_mode", token="-m", validate="int",
-                        help="Hash type code, for example 0 for MD5 or 1000 for NTLM."),
-                ArgSpec("attack_mode", token="-a", validate="int",
-                        help="Attack mode, for example 0 for a dictionary attack."),
-                ArgSpec("hashfile", kind="positional", required=True, validate="target",
-                        help="Path to the file containing the hashes."),
-                ArgSpec("wordlist", kind="positional", validate="target",
-                        help="Path to the wordlist for dictionary attacks."),
+                ArgSpec(
+                    "hash_mode",
+                    token="-m",
+                    validate="int",
+                    help="Hash type code, for example 0 for MD5 or 1000 for NTLM.",
+                ),
+                ArgSpec(
+                    "attack_mode",
+                    token="-a",
+                    validate="int",
+                    help="Attack mode, for example 0 for a dictionary attack.",
+                ),
+                ArgSpec(
+                    "hashfile",
+                    kind="positional",
+                    required=True,
+                    validate="target",
+                    help="Path to the file containing the hashes.",
+                ),
+                ArgSpec(
+                    "wordlist",
+                    kind="positional",
+                    validate="target",
+                    help="Path to the wordlist for dictionary attacks.",
+                ),
             ),
         ),
         # -- Forensics and file analysis ----------------------------------
@@ -836,10 +1084,16 @@ def build_registry() -> Registry:
             category="forensics",
             active=False,
             args=(
-                ArgSpec("min_len", token="-n", validate="int",
-                        help="Minimum sequence length to report."),
-                ArgSpec("file", kind="positional", required=True, validate="target",
-                        help="Path to the file to examine."),
+                ArgSpec(
+                    "min_len", token="-n", validate="int", help="Minimum sequence length to report."
+                ),
+                ArgSpec(
+                    "file",
+                    kind="positional",
+                    required=True,
+                    validate="target",
+                    help="Path to the file to examine.",
+                ),
             ),
         ),
         ToolSpec(
@@ -849,10 +1103,19 @@ def build_registry() -> Registry:
             category="forensics",
             active=False,
             args=(
-                ArgSpec("mime", kind="flag", token="-i",
-                        help="Report the MIME type instead of a description."),
-                ArgSpec("path", kind="positional", required=True, validate="target",
-                        help="Path to the file to identify."),
+                ArgSpec(
+                    "mime",
+                    kind="flag",
+                    token="-i",
+                    help="Report the MIME type instead of a description.",
+                ),
+                ArgSpec(
+                    "path",
+                    kind="positional",
+                    required=True,
+                    validate="target",
+                    help="Path to the file to identify.",
+                ),
             ),
         ),
         ToolSpec(
@@ -862,10 +1125,16 @@ def build_registry() -> Registry:
             category="forensics",
             active=False,
             args=(
-                ArgSpec("extract", kind="flag", token="-e",
-                        help="Extract recognized content to disk."),
-                ArgSpec("file", kind="positional", required=True, validate="target",
-                        help="Path to the file to analyze."),
+                ArgSpec(
+                    "extract", kind="flag", token="-e", help="Extract recognized content to disk."
+                ),
+                ArgSpec(
+                    "file",
+                    kind="positional",
+                    required=True,
+                    validate="target",
+                    help="Path to the file to analyze.",
+                ),
             ),
         ),
         ToolSpec(
@@ -875,8 +1144,13 @@ def build_registry() -> Registry:
             category="forensics",
             active=False,
             args=(
-                ArgSpec("file", kind="positional", required=True, validate="target",
-                        help="Path to the file whose metadata should be read."),
+                ArgSpec(
+                    "file",
+                    kind="positional",
+                    required=True,
+                    validate="target",
+                    help="Path to the file whose metadata should be read.",
+                ),
             ),
         ),
         ToolSpec(
@@ -886,25 +1160,54 @@ def build_registry() -> Registry:
             category="forensics",
             active=False,
             args=(
-                ArgSpec("interface", token="-i", validate="target",
-                        help="Interface to capture on."),
-                ArgSpec("count", token="-c", validate="int",
-                        help="Stop after capturing this many packets."),
-                ArgSpec("no_resolve", kind="flag", token="-n",
-                        help="Do not resolve addresses or ports to names."),
-                ArgSpec("ascii", kind="flag", token="-A",
-                        help="Print each packet's payload as ASCII - reveals cleartext "
-                             "protocol data such as FTP/HTTP credentials."),
-                ArgSpec("hex", kind="flag", token="-X",
-                        help="Print each packet's payload in hex and ASCII."),
-                ArgSpec("verbose", kind="flag", token="-v",
-                        help="Show more protocol detail per packet."),
-                ArgSpec("read", token="-r", validate="target",
-                        help="Read packets from a saved capture file."),
-                ArgSpec("write", token="-w", validate="target",
-                        help="Write captured packets to this file path."),
-                ArgSpec("filter", kind="positional",
-                        help="Packet filter expression, for example 'tcp port 80'."),
+                ArgSpec(
+                    "interface", token="-i", validate="target", help="Interface to capture on."
+                ),
+                ArgSpec(
+                    "count",
+                    token="-c",
+                    validate="int",
+                    help="Stop after capturing this many packets.",
+                ),
+                ArgSpec(
+                    "no_resolve",
+                    kind="flag",
+                    token="-n",
+                    help="Do not resolve addresses or ports to names.",
+                ),
+                ArgSpec(
+                    "ascii",
+                    kind="flag",
+                    token="-A",
+                    help="Print each packet's payload as ASCII - reveals cleartext "
+                    "protocol data such as FTP/HTTP credentials.",
+                ),
+                ArgSpec(
+                    "hex",
+                    kind="flag",
+                    token="-X",
+                    help="Print each packet's payload in hex and ASCII.",
+                ),
+                ArgSpec(
+                    "verbose", kind="flag", token="-v", help="Show more protocol detail per packet."
+                ),
+                ArgSpec(
+                    "read",
+                    token="-r",
+                    validate="target",
+                    help="Read packets from a saved capture file.",
+                ),
+                ArgSpec(
+                    "write",
+                    token="-w",
+                    validate="target",
+                    help="Write captured packets to this file path.",
+                ),
+                ArgSpec(
+                    "filter",
+                    kind="positional",
+                    help="Packet filter expression, for example 'tcp port 80'.",
+                ),
             ),
         ),
         ToolSpec(
@@ -914,14 +1217,26 @@ def build_registry() -> Registry:
             category="forensics",
             active=False,
             args=(
-                ArgSpec("interface", token="-i", validate="target",
-                        help="Interface to capture on."),
-                ArgSpec("count", token="-c", validate="int",
-                        help="Stop after capturing this many packets."),
-                ArgSpec("read", token="-r", validate="target",
-                        help="Read packets from a saved capture file."),
-                ArgSpec("display_filter", token="-Y",
-                        help="Display filter expression, for example 'http.request'."),
+                ArgSpec(
+                    "interface", token="-i", validate="target", help="Interface to capture on."
+                ),
+                ArgSpec(
+                    "count",
+                    token="-c",
+                    validate="int",
+                    help="Stop after capturing this many packets.",
+                ),
+                ArgSpec(
+                    "read",
+                    token="-r",
+                    validate="target",
+                    help="Read packets from a saved capture file.",
+                ),
+                ArgSpec(
+                    "display_filter",
+                    token="-Y",
+                    help="Display filter expression, for example 'http.request'.",
+                ),
             ),
         ),
         # -- Remote command execution -------------------------------------
@@ -934,8 +1249,11 @@ def build_registry() -> Registry:
             args=(
                 ArgSpec("user", required=True, help="Username to log in as."),
                 ArgSpec("host", required=True, help="Target host or address."),
-                ArgSpec("command", required=True,
-                        help="Command to run on the remote host, for example 'id; sudo -l'."),
+                ArgSpec(
+                    "command",
+                    required=True,
+                    help="Command to run on the remote host, for example 'id; sudo -l'.",
+                ),
                 ArgSpec("password", help="Password for the account (authenticates via sshpass)."),
                 ArgSpec("key", help="Path to a private key file for authentication."),
                 ArgSpec("port", validate="int", help="SSH port if not 22."),
@@ -951,8 +1269,11 @@ def build_registry() -> Registry:
                 ArgSpec("user", required=True, help="Username to log in as."),
                 ArgSpec("host", required=True, help="Target host or address."),
                 ArgSpec("password", required=True, help="Password for the account."),
-                ArgSpec("command", required=True,
-                        help="Command to run on the remote host, for example 'id; sudo -l'."),
+                ArgSpec(
+                    "command",
+                    required=True,
+                    help="Command to run on the remote host, for example 'id; sudo -l'.",
+                ),
                 ArgSpec("port", validate="int", help="SSH port if not 22."),
             ),
         ),
@@ -962,18 +1283,24 @@ def build_registry() -> Registry:
             summary="Query an LDAP or Active Directory server for directory objects.",
             category="smb",
             args=(
-                ArgSpec("simple_auth", kind="flag", token="-x",
-                        help="Use simple authentication (or anonymous bind)."),
-                ArgSpec("uri", token="-H", validate="target",
-                        help="Server URI such as ldap://10.10.10.10."),
-                ArgSpec("base", token="-b",
-                        help="Search base DN, for example dc=example,dc=com."),
-                ArgSpec("bind_dn", token="-D",
-                        help="Bind DN to authenticate as."),
-                ArgSpec("password", token="-w",
-                        help="Password for the bind DN."),
-                ArgSpec("filter", kind="positional",
-                        help="LDAP filter, for example (objectClass=user)."),
+                ArgSpec(
+                    "simple_auth",
+                    kind="flag",
+                    token="-x",
+                    help="Use simple authentication (or anonymous bind).",
+                ),
+                ArgSpec(
+                    "uri",
+                    token="-H",
+                    validate="target",
+                    help="Server URI such as ldap://10.10.10.10.",
+                ),
+                ArgSpec("base", token="-b", help="Search base DN, for example dc=example,dc=com."),
+                ArgSpec("bind_dn", token="-D", help="Bind DN to authenticate as."),
+                ArgSpec("password", token="-w", help="Password for the bind DN."),
+                ArgSpec(
+                    "filter", kind="positional", help="LDAP filter, for example (objectClass=user)."
+                ),
             ),
         ),
         # -- Exploit research and scanning --------------------------------
@@ -985,8 +1312,7 @@ def build_registry() -> Registry:
             active=False,
             builder=_build_searchsploit,
             args=(
-                ArgSpec("terms", required=True,
-                        help="Search terms, for example 'apache 2.4.49'."),
+                ArgSpec("terms", required=True, help="Search terms, for example 'apache 2.4.49'."),
                 ArgSpec("cve", kind="flag", help="Treat the terms as a CVE identifier."),
             ),
         ),
@@ -996,12 +1322,17 @@ def build_registry() -> Registry:
             summary="Scan a target with community templates for known vulnerabilities.",
             category="web",
             args=(
-                ArgSpec("url", token="-u", required=True, validate="target",
-                        help="Target URL to scan."),
-                ArgSpec("severity", token="-severity",
-                        help="Restrict to severities, for example critical,high."),
-                ArgSpec("tags", token="-tags",
-                        help="Restrict to template tags, for example cve,rce."),
+                ArgSpec(
+                    "url", token="-u", required=True, validate="target", help="Target URL to scan."
+                ),
+                ArgSpec(
+                    "severity",
+                    token="-severity",
+                    help="Restrict to severities, for example critical,high.",
+                ),
+                ArgSpec(
+                    "tags", token="-tags", help="Restrict to template tags, for example cve,rce."
+                ),
             ),
         ),
         ToolSpec(
@@ -1010,12 +1341,19 @@ def build_registry() -> Registry:
             summary="Scan a WordPress site for users, plugins, and known issues.",
             category="web",
             args=(
-                ArgSpec("url", token="--url", required=True, validate="target",
-                        help="WordPress site URL."),
-                ArgSpec("enumerate", token="-e",
-                        help="What to enumerate, for example vp,vt,u."),
-                ArgSpec("api_token", token="--api-token",
-                        help="WPScan API token for vulnerability data."),
+                ArgSpec(
+                    "url",
+                    token="--url",
+                    required=True,
+                    validate="target",
+                    help="WordPress site URL.",
+                ),
+                ArgSpec("enumerate", token="-e", help="What to enumerate, for example vp,vt,u."),
+                ArgSpec(
+                    "api_token",
+                    token="--api-token",
+                    help="WPScan API token for vulnerability data.",
+                ),
             ),
         ),
         # -- Active Directory credential attacks --------------------------
@@ -1026,8 +1364,11 @@ def build_registry() -> Registry:
             category="creds",
             builder=_build_getnpusers,
             args=(
-                ArgSpec("target", required=True,
-                        help="Connection string, for example EXAMPLE.LOCAL/ or EXAMPLE.LOCAL/user."),
+                ArgSpec(
+                    "target",
+                    required=True,
+                    help="Connection string, for example EXAMPLE.LOCAL/ or EXAMPLE.LOCAL/user.",
+                ),
                 ArgSpec("usersfile", help="Path to a list of usernames to test."),
                 ArgSpec("no_pass", kind="flag", help="Do not send a password (roasting)."),
                 ArgSpec("request", kind="flag", help="Request the AS-REP hash for each account."),
@@ -1041,8 +1382,11 @@ def build_registry() -> Registry:
             category="creds",
             builder=_build_getuserspns,
             args=(
-                ArgSpec("target", required=True,
-                        help="Connection string, for example EXAMPLE.LOCAL/user:password."),
+                ArgSpec(
+                    "target",
+                    required=True,
+                    help="Connection string, for example EXAMPLE.LOCAL/user:password.",
+                ),
                 ArgSpec("dc_ip", help="Domain controller address."),
             ),
         ),
@@ -1053,10 +1397,14 @@ def build_registry() -> Registry:
             category="creds",
             builder=_build_secretsdump,
             args=(
-                ArgSpec("target", required=True,
-                        help="Connection string, for example EXAMPLE.LOCAL/user:password@host."),
-                ArgSpec("just_dc", kind="flag",
-                        help="Dump domain hashes over DRSUAPI (NTDS) only."),
+                ArgSpec(
+                    "target",
+                    required=True,
+                    help="Connection string, for example EXAMPLE.LOCAL/user:password@host.",
+                ),
+                ArgSpec(
+                    "just_dc", kind="flag", help="Dump domain hashes over DRSUAPI (NTDS) only."
+                ),
                 ArgSpec("dc_ip", help="Domain controller address."),
             ),
         ),

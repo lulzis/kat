@@ -17,7 +17,7 @@ loop's events and streamed tokens into tagged, colour-coded lines.
 
 from __future__ import annotations
 
-from typing import Mapping
+from collections.abc import Mapping
 
 from rich import box
 from rich.console import Console
@@ -109,11 +109,9 @@ class RichReporter:
         if self._status is not None or self._streaming:
             return
         try:
-            self._status = self.console.status(
-                Text(label, style="status"), spinner="dots"
-            )
+            self._status = self.console.status(Text(label, style="status"), spinner="dots")
             self._status.start()
-        except Exception:
+        except Exception:  # noqa: BLE001 - spinner is optional, fall back to plain output
             self._status = None
 
     def event(self, kind: str, message: str) -> None:
@@ -131,7 +129,7 @@ class RichReporter:
         )
         try:
             self.console.file.flush()
-        except Exception:
+        except Exception:  # noqa: BLE001, S110 - a failed flush must not crash the UI
             pass
         self._line_open = not text.endswith("\n")
 
@@ -144,7 +142,7 @@ class RichReporter:
         if self._status is not None:
             try:
                 self._status.stop()
-            except Exception:
+            except Exception:  # noqa: BLE001, S110 - stopping the spinner is best effort
                 pass
             self._status = None
 
@@ -195,9 +193,7 @@ def banner(info: Mapping[str, object]) -> None:
         value = "-" if raw is None or str(raw) == "" else str(raw)
         style = _status_style(value) if key == "STATUS" else ""
         grid.add_row(key, Text(value, style=style))
-    console.print(
-        Panel(grid, title="KAT", border_style="info", expand=False, padding=(0, 1))
-    )
+    console.print(Panel(grid, title="KAT", border_style="info", expand=False, padding=(0, 1)))
 
 
 # --- tables ----------------------------------------------------------------

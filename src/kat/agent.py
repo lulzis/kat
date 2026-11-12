@@ -4,8 +4,9 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable, Protocol
+from typing import Protocol
 
 from .client import LLMClient, LLMError
 from .config import Config
@@ -53,7 +54,7 @@ class NullReporter:
 Approver = Callable[[ToolSpec, "Action"], bool]
 
 
-def always_approve(spec: ToolSpec, action: "Action") -> bool:
+def always_approve(spec: ToolSpec, action: Action) -> bool:
     return True
 
 
@@ -89,14 +90,17 @@ class Agent:
             if not actions:
                 if _looks_like_action_attempt(reply):
                     self.reporter.event("warn", "malformed action - asking for valid JSON")
-                    session.add("user", _observe(
-                        "kat",
-                        "That looked like a tool call but its JSON could not be parsed "
-                        "(watch for a stray or missing brace). Re-send a valid fenced "
-                        "action block:\n"
-                        '```action\n{"tool": "<name>", "args": {...}, "reason": "<why>"}\n```\n'
-                        "If you are finished instead, reply in prose with no braces.",
-                    ))
+                    session.add(
+                        "user",
+                        _observe(
+                            "kat",
+                            "That looked like a tool call but its JSON could not be parsed "
+                            "(watch for a stray or missing brace). Re-send a valid fenced "
+                            "action block:\n"
+                            '```action\n{"tool": "<name>", "args": {...}, "reason": "<why>"}\n```\n'
+                            "If you are finished instead, reply in prose with no braces.",
+                        ),
+                    )
                     continue
                 self.reporter.event("done", "analysis complete")
                 return reply
@@ -105,12 +109,15 @@ class Agent:
             if len(actions) > MAX_ACTIONS_PER_TURN:
                 dropped = len(actions) - MAX_ACTIONS_PER_TURN
                 self.reporter.event("warn", f"{dropped} extra action(s) deferred")
-                session.add("user", _observe(
-                    "kat",
-                    f"Only the first {MAX_ACTIONS_PER_TURN} of your {len(actions)} action "
-                    f"blocks ran this turn; the other {dropped} were not executed. Read the "
-                    "observations above, then send the remaining steps - a few at a time.",
-                ))
+                session.add(
+                    "user",
+                    _observe(
+                        "kat",
+                        f"Only the first {MAX_ACTIONS_PER_TURN} of your {len(actions)} action "
+                        f"blocks ran this turn; the other {dropped} were not executed. Read the "
+                        "observations above, then send the remaining steps - a few at a time.",
+                    ),
+                )
         self.reporter.event("warn", f"stopped at step limit ({self.config.max_steps})")
         session.add("user", "[kat] step limit reached")
         return "Reached the step limit before finishing. Run `kat continue` to go further."
@@ -221,8 +228,8 @@ class Agent:
             "genuine credential first (from the web app, a packet capture, a config, a "
             "readable file), then log in. For a password use the ssh tool with password=<pw> "
             "(it authenticates via sshpass) or the sshpass tool; for a key use ssh with "
-            "key=<path>. Then run your checks in one command: \"id; sudo -l; getcap -r / "
-            "2>/dev/null; find / -perm -4000 2>/dev/null\". Tools you run locally inspect THIS "
+            'key=<path>. Then run your checks in one command: "id; sudo -l; getcap -r / '
+            '2>/dev/null; find / -perm -4000 2>/dev/null". Tools you run locally inspect THIS '
             "attacker machine, not the target, so they never reveal the target's own "
             "capabilities or SUID binaries.\n"
             "- The flag is a short text token, usually in user.txt or root.txt. Once you "
@@ -336,7 +343,7 @@ def _looks_like_action_attempt(text: str) -> bool:
 def _preview(spec: ToolSpec, action: Action) -> list[str]:
     try:
         return spec.argv(action.args)
-    except Exception:
+    except Exception:  # noqa: BLE001 - display fallback, must never raise
         return [spec.binary, *(f"{k}={v}" for k, v in action.args.items())]
 
 

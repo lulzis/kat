@@ -67,7 +67,7 @@ class Session:
         }
 
     @classmethod
-    def load(cls, file: Path) -> "Session":
+    def load(cls, file: Path) -> Session:
         data = json.loads(Path(file).read_text(encoding="utf-8"))
         return cls(
             id=data["id"],
@@ -78,7 +78,7 @@ class Session:
         )
 
     @classmethod
-    def latest(cls, directory: Path) -> "Session | None":
+    def latest(cls, directory: Path) -> Session | None:
         directory = Path(directory)
         if not directory.is_dir():
             return None

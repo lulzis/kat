@@ -13,7 +13,7 @@ authors = [{ name = "lulzis" }]
 dependencies = ["rich>=13.7"]
 
 [project.optional-dependencies]
-dev = ["pytest>=8"]
+dev = ["pytest>=8", "ruff==0.17.4"]
 
 [project.scripts]
 kat = "kat.cli:main"
@@ -24,3 +24,6 @@ packages = ["src/kat"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+
+[tool.ruff]
+line-length = 100

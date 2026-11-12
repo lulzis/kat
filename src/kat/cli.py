@@ -106,12 +106,8 @@ def _build_global_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--base-url", metavar="URL", help="base URL of the model endpoint")
     parser.add_argument("--model", metavar="NAME", help="model name to request")
-    parser.add_argument(
-        "--no-stream", action="store_true", help="disable streaming of tokens"
-    )
-    parser.add_argument(
-        "--max-steps", type=int, metavar="N", help="maximum think/act iterations"
-    )
+    parser.add_argument("--no-stream", action="store_true", help="disable streaming of tokens")
+    parser.add_argument("--max-steps", type=int, metavar="N", help="maximum think/act iterations")
     return parser
 
 
@@ -121,9 +117,7 @@ def _build_main_parser(global_parser: argparse.ArgumentParser) -> argparse.Argum
         parents=[global_parser],
         description="KAT - a local-first assistant for security engineering.",
     )
-    subparsers = parser.add_subparsers(
-        dest="command", metavar="{" + ",".join(SUBCOMMANDS) + "}"
-    )
+    subparsers = parser.add_subparsers(dest="command", metavar="{" + ",".join(SUBCOMMANDS) + "}")
 
     chat = subparsers.add_parser(
         "chat", parents=[global_parser], help="hold an interactive session"
@@ -135,9 +129,7 @@ def _build_main_parser(global_parser: argparse.ArgumentParser) -> argparse.Argum
         parents=[global_parser],
         help="explain a command, flag, or output; runs no tools",
     )
-    explain.add_argument(
-        "text", nargs="*", help="what to explain (wrap code in ***...***)"
-    )
+    explain.add_argument("text", nargs="*", help="what to explain (wrap code in ***...***)")
     explain.set_defaults(func=cmd_explain)
 
     tools = subparsers.add_parser(
@@ -290,7 +282,7 @@ def make_approver(console, assume_yes: bool):
     def approver(spec: ToolSpec, action: Action) -> bool:
         try:
             command = " ".join(spec.argv(action.args))
-        except Exception:
+        except Exception:  # noqa: BLE001 - display fallback, must never raise
             command = " ".join(
                 [spec.binary, *(f"{key}={value}" for key, value in action.args.items())]
             )
@@ -313,9 +305,7 @@ def make_approver(console, assume_yes: bool):
             ui.print_event("approval", "no input available; declining.", console=console)
             return False
         approved = answer.strip().lower() in ("y", "yes")
-        ui.print_event(
-            "approval", "approved." if approved else "declined.", console=console
-        )
+        ui.print_event("approval", "approved." if approved else "declined.", console=console)
         return approved
 
     return approver
@@ -480,7 +470,7 @@ def cmd_explain(args: argparse.Namespace) -> int:
 
 
 def _explain_once(
-    client: LLMClient, session: Session, reporter: "ui.RichReporter", text: str
+    client: LLMClient, session: Session, reporter: ui.RichReporter, text: str
 ) -> bool:
     """Run one explain turn: spinner while the model thinks, then the answer."""
     session.add("user", text)
